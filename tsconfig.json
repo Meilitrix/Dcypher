@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@decypher/core": ["packages/core/index.ts"],
+      "@decypher/agent": ["packages/agent/index.ts"],
+      "@decypher/protect": ["packages/protect/index.ts"],
+      "@decypher/snapshot": ["packages/snapshot/index.ts"],
+      "@decypher/diff": ["packages/diff/index.ts"]
+    }
+  },
+  "include": ["server.ts", "server", "packages", "src", "scripts", "vite.config.ts"],
+  "exclude": ["node_modules", "dist", ".decypher-work", "sample-target"]
+}

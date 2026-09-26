@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.decypher-work/
+.decypher-smoke/
+.decypher-smoke-preview/
+.decypher-preview/
+*.log
+.DS_Store
+.env
+.env.local
