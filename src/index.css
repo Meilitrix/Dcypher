@@ -4,20 +4,22 @@
 
 /* ── Design tokens ──────────────────────────────────────────────────────── */
 :root {
-  --bg:        #0b1020;
-  --bg-elev:   #121a2e;
-  --panel:     #16203a;
-  --panel-2:   #1b2745;
-  --border:    #26324f;
-  --text:      #e6ecff;
-  --muted:     #8ea0c9;
-  --accent:    #5b8cff;
-  --accent-2:  #38bdf8;
-  --danger:    #ff6b7a;
-  --warn:      #ffb454;
-  --ok:        #46d39f;
-  --added-bg:  rgba(70, 211, 159, 0.12);
-  --removed-bg:rgba(255, 107, 122, 0.12);
+  /* Decypher deck theme (Decypher.pptx): warm light surfaces, bright-green
+     primary, sand neutrals, orange highlights. */
+  --bg:        #f5f2ea;
+  --bg-elev:   #fffdf9;
+  --panel:     #fbf8f2;
+  --panel-2:   #f0e7d6;
+  --border:    #e3d8c4;
+  --text:      #2b2118;
+  --muted:     #6e7b6f;
+  --accent:    #2e9e4f;
+  --accent-2:  #7ed957;
+  --danger:    #f1641f;
+  --warn:      #f48b00;
+  --ok:        #5cb85c;
+  --added-bg:  rgba(126, 217, 87, 0.16);
+  --removed-bg:rgba(241, 100, 31, 0.12);
 
   --topbar-h:  48px;
   --sidebar-w: 220px;
@@ -375,7 +377,7 @@ html, body {
 
 /* assistant: purple left accent for free-form AI answers */
 .msg-bubble.assistant {
-  border-left: 3px solid #7c5cd8;
+  border-left: 3px solid #a9752f;
 }
 
 .msg-bubble.thinking {
@@ -394,7 +396,7 @@ html, body {
 
 .msg-bubble.plan-narrative .msg-label { color: var(--accent); }
 .msg-bubble.diff-narrative .msg-label { color: var(--ok); }
-.msg-bubble.assistant .msg-label { color: #7c5cd8; }
+.msg-bubble.assistant .msg-label { color: #a9752f; }
 
 /* Which engine produced an assistant reply (honest fallback labelling). */
 .msg-bubble.assistant .msg-label {
@@ -524,7 +526,7 @@ html, body {
   font-weight: 600;
   background: none;
   border: none;
-  color: var(--accent-2);
+  color: var(--accent);
   padding: 0;
   cursor: pointer;
   text-align: left;
@@ -627,7 +629,7 @@ html, body {
 }
 
 .ft-name-btn:hover:not(:disabled) {
-  color: var(--accent-2);
+  color: var(--accent);
   border-color: transparent;
 }
 
@@ -726,7 +728,7 @@ html, body {
 }
 
 .fv-line:hover .fv-lc {
-  background: rgba(255,255,255,0.03);
+  background: rgba(0,0,0,0.05);
 }
 
 .fv-ln {
@@ -735,8 +737,8 @@ html, body {
   min-width: 38px;
   text-align: right;
   padding: 0 8px 0 4px;
-  color: #3a4a6a;
-  background: rgba(0,0,0,0.18);
+  color: #9a8e78;
+  background: rgba(0,0,0,0.05);
   user-select: none;
   vertical-align: top;
   white-space: nowrap;
@@ -1211,7 +1213,7 @@ input[type='text']:focus, textarea:focus {
 }
 
 .badge.create { color: var(--ok);      background: rgba(70,211,159,0.14); }
-.badge.modify { color: var(--accent-2);background: rgba(56,189,248,0.14); }
+.badge.modify { color: var(--accent);background: rgba(198,166,113,0.28); }
 .badge.delete { color: var(--danger);  background: rgba(255,107,122,0.14); }
 
 /* ── Plan file items ────────────────────────────────────────────────────── */
@@ -1262,8 +1264,8 @@ input[type='text']:focus, textarea:focus {
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--accent-2);
-  background: rgba(56,189,248,0.12);
+  color: var(--accent);
+  background: rgba(198,166,113,0.22);
   border-radius: 4px;
   padding: 1px 5px;
   margin-right: 5px;
@@ -1386,20 +1388,20 @@ input[type='text']:focus, textarea:focus {
   flex-shrink: 0;
   text-align: right;
   padding: 1px 6px;
-  color: #4a5a80;
-  background: rgba(0,0,0,0.18);
+  color: #9a8e78;
+  background: rgba(0,0,0,0.05);
   user-select: none;
 }
 
 .diff .line .sign { width: 16px; flex-shrink: 0; text-align: center; color: var(--muted); }
 .diff .line .code { padding: 1px 8px; flex: 1; }
 .diff .line.context .code { color: var(--muted); }
-.diff .line.added    { background: rgba(70,211,159,0.18); }
+.diff .line.added    { background: rgba(126,217,87,0.20); }
 .diff .line.added .sign { color: var(--ok); }
-.diff .line.added .code { color: #c7f7e0; }
-.diff .line.removed  { background: rgba(255,107,122,0.18); }
+.diff .line.added .code { color: #14532d; }
+.diff .line.removed  { background: rgba(241,100,31,0.14); }
 .diff .line.removed .sign { color: var(--danger); }
-.diff .line.removed .code { color: #f0a7b0; opacity: 0.82; text-decoration: line-through; text-decoration-color: rgba(255,107,122,0.5); }
+.diff .line.removed .code { color: #9a3412; opacity: 0.9; text-decoration: line-through; text-decoration-color: rgba(241,100,31,0.55); }
 
 /* ── Before/after compare panes ─────────────────────────────────────────── */
 .compare {
@@ -1426,7 +1428,7 @@ input[type='text']:focus, textarea:focus {
 }
 
 .compare .pane.original header { color: var(--muted); }
-.compare .pane.modified header { color: var(--accent-2); }
+.compare .pane.modified header { color: var(--accent); }
 
 .compare pre {
   margin: 0;
