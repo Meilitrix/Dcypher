@@ -1,6 +1,9 @@
 import type { AgentKind, ConflictResolution, DecypherSession } from '@decypher/core';
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8787';
+// Default to same-origin relative paths: the built UI is served by the orchestrator itself
+// (single tunnel URL, no CORS), and Vite forwards /api to :8787 in dev. Set VITE_API_BASE
+// only when the API lives on a different origin.
+const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

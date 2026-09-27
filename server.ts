@@ -1,7 +1,7 @@
 // Load .env before reading any process.env values.
 import 'dotenv/config';
-import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
@@ -9,7 +9,10 @@ import { OrchestratorError, DecypherOrchestrator } from './server/orchestrator';
 import { RepoLoaderError, cloneRepo, extractZip, validateLocalPath } from './server/repoLoader';
 import type { AgentKind, ConflictResolution } from '@decypher/core';
 
-const projectDir = dirname(fileURLToPath(import.meta.url));
+// Resolve everything from the working directory (npm scripts run from the repo root) so the
+// same code works whether launched via `tsx server.ts` or the bundled `node dist/server.mjs`.
+const projectDir = process.cwd();
+const DIST_DIR = resolve(projectDir, 'dist');
 
 const PORT = Number(process.env.PORT ?? 8787);
 const WEB_ORIGIN = process.env.WEB_ORIGIN ?? 'http://localhost:5173';
@@ -197,6 +200,19 @@ app.get(
   }),
 );
 
+// ---- static web UI (single-origin deploy) --------------------------------
+// When the Vite UI has been built (dist/index.html exists), serve it from this same
+// server so the whole app is one origin — no CORS, and relative /api calls just work.
+// This is what makes a single tunnel URL viable. In dev the UI runs on :5173 via a proxy.
+const hasUi = existsSync(join(DIST_DIR, 'index.html'));
+if (hasUi) {
+  app.use(express.static(DIST_DIR));
+  // SPA fallback: any non-API GET returns the app shell.
+  app.get(/^(?!\/api$|\/api\/).*/, (_req, res) => {
+    res.sendFile(join(DIST_DIR, 'index.html'));
+  });
+}
+
 // Error handler: OrchestratorError / RepoLoaderError -> 409, everything else -> 500.
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   if (err instanceof OrchestratorError || err instanceof RepoLoaderError) {
@@ -211,6 +227,7 @@ app.listen(PORT, () => {
   console.log(`Decypher orchestrator on http://localhost:${PORT}`);
   console.log(`  agent=${AGENT}  default repo=${DEFAULT_REPO}`);
   console.log(`  preview ports ${PREVIEW_PORTS.before} (before) / ${PREVIEW_PORTS.after} (after)`);
+  console.log(hasUi ? `  serving web UI from ${DIST_DIR}` : '  web UI not built (run `npm run build` to serve it here)');
   console.log(`  allowing web origin ${WEB_ORIGIN}`);
 });
 

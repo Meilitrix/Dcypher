@@ -21,11 +21,15 @@ export default defineConfig(() => {
     },
     server: {
       port: 5173,
+      // The UI calls the API with relative /api paths (same-origin in the single-server
+      // build). In dev the UI is on :5173, so forward /api to the orchestrator on :8787.
+      proxy: {
+        '/api': { target: 'http://localhost:8787', changeOrigin: true },
+      },
       watch: {
         // The orchestrator copies repos into these workspaces; never treat them as UI source.
         ignored: ['**/.decypher-work/**', '**/.decypher-smoke/**', '**/.decypher-preview/**', '**/sample-target/**'],
       },
-      // API base is absolute (http://localhost:8787) so HMR/proxy is not required.
     },
   };
 });
