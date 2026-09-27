@@ -920,7 +920,7 @@ html, body {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: auto 1fr 320px;
+  grid-template-columns: auto minmax(0, 1fr) 320px;
   overflow: hidden;
 }
 
@@ -1094,6 +1094,26 @@ html, body {
   line-height: 1.5;
 }
 .cc-chat-input:focus { outline: none; border-color: var(--accent); }
+
+/* Narrow windows: the fixed rail + chat would crush the center diff to a sliver.
+   Move the chat below the code so the diff always gets real width. */
+@media (max-width: 1100px) {
+  .cc-wrap {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .cc-chat {
+    grid-column: 1 / -1;
+    width: auto;
+    max-height: 240px;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+}
+@media (max-width: 720px) {
+  .cc-rail { width: 52px; }
+  .cc-rail .cc-nav-text { display: none; }
+}
 
 /* ── File viewer highlighted diff ────────────────────────────────────────── */
 .fv-diff-body { padding: 12px; overflow: auto; }
