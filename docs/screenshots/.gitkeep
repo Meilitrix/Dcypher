@@ -1,0 +1,12 @@
+# Drop your demo screenshots in this folder.
+#
+# Suggested names (README -> Showcase references these; rename or edit as needed):
+#   01-bob-session.png          the real IBM Bob 2.0 session (proof you used Bob)
+#   02-app-overview.png         Decypher UI with a session open
+#   03-plan-before-change.png   the Plan stage (files to touch + plain-English narrative)
+#   04-protection-conflict.png  a protected file blocking the change
+#   05-compare-diff.png         before/after diff + AI narration
+#   06-live-preview.png         the Compare / live-view
+#   07-deployed.png             the live onrender URL open in a browser
+#
+# Before committing: crop/blur any API keys, .env text, tokens, or personal file paths.

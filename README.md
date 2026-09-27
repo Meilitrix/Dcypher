@@ -13,6 +13,25 @@ informed at every step:
 
 Built for the IBM Bob 2.0 hackathon.
 
+## Showcase
+
+> Screenshots live in [`docs/screenshots/`](docs/screenshots/). Drop images there to make
+> these render (names are placeholders until the files are added).
+
+| IBM Bob 2.0 session (used to build & drive Decypher) | The Decypher control UI |
+| --- | --- |
+| ![Bob session](docs/screenshots/01-bob-session.png) | ![Overview](docs/screenshots/02-app-overview.png) |
+
+| Plan before change | Protect what matters |
+| --- | --- |
+| ![Plan](docs/screenshots/03-plan-before-change.png) | ![Protect](docs/screenshots/04-protection-conflict.png) |
+
+| Compare before / after | AI narration + live view |
+| --- | --- |
+| ![Diff](docs/screenshots/05-compare-diff.png) | ![Preview](docs/screenshots/06-live-preview.png) |
+
+🔗 **Live demo:** _<your onrender URL>_  ·  🎬 **Demo video:** _<add link>_
+
 ## Run it
 
 ```bash
