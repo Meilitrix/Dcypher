@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.env
+.env.local
+.env.*.local
+.decypher-work
+.decypher-smoke
+.decypher-smoke-preview
+.decypher-preview
+.deploy-*
+*.log
+*.err
+.DS_Store

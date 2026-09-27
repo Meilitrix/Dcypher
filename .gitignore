@@ -13,6 +13,7 @@ dist/
 # Debug / runtime artifacts
 *.log
 *.err
+.deploy-*.pid
 .ports.txt
 .path.txt
 .probe.txt
