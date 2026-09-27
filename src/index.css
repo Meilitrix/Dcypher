@@ -4,21 +4,21 @@
 
 /* ── Design tokens ──────────────────────────────────────────────────────── */
 :root {
-  /* Decypher deck theme (Decypher.pptx): warm light surfaces, bright-green
-     primary, sand neutrals, orange highlights. */
-  --bg:        #f5f2ea;
-  --bg-elev:   #fffdf9;
-  --panel:     #fbf8f2;
-  --panel-2:   #f0e7d6;
-  --border:    #e3d8c4;
-  --text:      #2b2118;
-  --muted:     #6e7b6f;
-  --accent:    #2e9e4f;
-  --accent-2:  #7ed957;
+  /* Decypher deck theme (Decypher.pptx) on a black base: bright-green
+     primary, orange highlights, warm-white text. */
+  --bg:        #0a0a0a;
+  --bg-elev:   #121212;
+  --panel:     #171717;
+  --panel-2:   #202020;
+  --border:    #2c2c2c;
+  --text:      #f3f1ea;
+  --muted:     #9aa39a;
+  --accent:    #7ed957;
+  --accent-2:  #a8e6a1;
   --danger:    #f1641f;
   --warn:      #f48b00;
-  --ok:        #5cb85c;
-  --added-bg:  rgba(126, 217, 87, 0.16);
+  --ok:        #7ed957;
+  --added-bg:  rgba(126, 217, 87, 0.14);
   --removed-bg:rgba(241, 100, 31, 0.12);
 
   --topbar-h:  48px;
@@ -728,7 +728,7 @@ html, body {
 }
 
 .fv-line:hover .fv-lc {
-  background: rgba(0,0,0,0.05);
+  background: rgba(255,255,255,0.04);
 }
 
 .fv-ln {
@@ -737,8 +737,8 @@ html, body {
   min-width: 38px;
   text-align: right;
   padding: 0 8px 0 4px;
-  color: #9a8e78;
-  background: rgba(0,0,0,0.05);
+  color: #6b7268;
+  background: rgba(255,255,255,0.04);
   user-select: none;
   vertical-align: top;
   white-space: nowrap;
@@ -1388,20 +1388,20 @@ input[type='text']:focus, textarea:focus {
   flex-shrink: 0;
   text-align: right;
   padding: 1px 6px;
-  color: #9a8e78;
-  background: rgba(0,0,0,0.05);
+  color: #6b7268;
+  background: rgba(255,255,255,0.04);
   user-select: none;
 }
 
 .diff .line .sign { width: 16px; flex-shrink: 0; text-align: center; color: var(--muted); }
 .diff .line .code { padding: 1px 8px; flex: 1; }
 .diff .line.context .code { color: var(--muted); }
-.diff .line.added    { background: rgba(126,217,87,0.20); }
+.diff .line.added    { background: rgba(126,217,87,0.16); }
 .diff .line.added .sign { color: var(--ok); }
-.diff .line.added .code { color: #14532d; }
-.diff .line.removed  { background: rgba(241,100,31,0.14); }
+.diff .line.added .code { color: #cdf0bf; }
+.diff .line.removed  { background: rgba(241,100,31,0.12); }
 .diff .line.removed .sign { color: var(--danger); }
-.diff .line.removed .code { color: #9a3412; opacity: 0.9; text-decoration: line-through; text-decoration-color: rgba(241,100,31,0.55); }
+.diff .line.removed .code { color: #f5c9a8; opacity: 0.9; text-decoration: line-through; text-decoration-color: rgba(241,100,31,0.55); }
 
 /* ── Before/after compare panes ─────────────────────────────────────────── */
 .compare {
