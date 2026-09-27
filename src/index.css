@@ -1100,12 +1100,13 @@ html, body {
 @media (max-width: 1100px) {
   .cc-wrap {
     grid-template-columns: auto minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
+    /* Center keeps at least half the height so a short window can't crush the diff. */
+    grid-template-rows: minmax(50%, 1fr) auto;
   }
   .cc-chat {
     grid-column: 1 / -1;
     width: auto;
-    max-height: 240px;
+    max-height: 200px;
     border-left: none;
     border-top: 1px solid var(--border);
   }
