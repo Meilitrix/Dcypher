@@ -19,10 +19,17 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Hosts (Render/Fly/Railway) inject PORT; the server reads process.env.PORT.
+# Hosts (Koyeb/Render/Fly/Railway) inject PORT; the server reads process.env.PORT.
 ENV NODE_ENV=production
 ENV PORT=8080
 EXPOSE 8080
+
+# Koyeb/Render run containers as a non-root uid, but the app writes to
+# .decypher-work/ and .decypher-preview/ at runtime. Pre-create them and hand
+# /app to the unprivileged `node` user so nothing fails with EACCES.
+RUN mkdir -p /app/.decypher-work /app/.decypher-preview \
+  && chown -R node:node /app
+USER node
 
 # projectDir resolves from cwd (/app), so sample-target and dist/ are found here.
 CMD ["node", "dist/server.mjs"]
