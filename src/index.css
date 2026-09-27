@@ -1471,6 +1471,103 @@ input[type='text']:focus, textarea:focus {
   background: #fff;
 }
 
+/* ---- Live preview unavailable (tunnel/https/non-runnable): honest dummy ---- */
+.lp-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px;
+}
+.lp-fallback-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.lp-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.lp-reason {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.lp-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.lp-dummies {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.lp-dummy {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-elev);
+}
+.lp-dummy-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.lp-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.lp-dot.r { background: #f87171; }
+.lp-dot.y { background: #fbbf24; }
+.lp-dot.g { background: #34d399; }
+.lp-dummy-url {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.lp-dummy-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 14px 26px;
+  min-height: 260px;
+}
+.lp-wire { border-radius: 6px; background: rgba(120, 120, 140, 0.18); }
+.lp-wire-title { width: 45%; height: 16px; }
+.lp-wire-line { width: 70%; height: 10px; }
+.lp-wire-item { width: 100%; height: 26px; }
+.lp-wire-item.short { width: 82%; }
+.lp-wire-added {
+  width: 100%;
+  height: 26px;
+  border: 1px dashed rgba(16, 185, 129, 0.6);
+  background: rgba(16, 185, 129, 0.12);
+}
+.lp-dummy-tag {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+@media (max-width: 900px) {
+  .lp-dummies { grid-template-columns: 1fr; }
+}
+
 .fallback {
   padding: 14px;
   border: 1px dashed var(--border);

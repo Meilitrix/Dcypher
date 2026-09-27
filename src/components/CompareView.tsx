@@ -10,6 +10,17 @@ interface Props {
 
 type Mode = 'source' | 'live';
 
+/**
+ * Can this page embed the preview servers running on the server host's own localhost?
+ * Only when the UI itself is served over plain http from localhost — i.e. local dev.
+ * Over a tunnel / https / remote deploy this is false, so we show a labelled dummy
+ * instead of iframes the browser would block (mixed content) or resolve to the wrong box.
+ */
+const canEmbedLive =
+  typeof window !== 'undefined' &&
+  window.location.protocol === 'http:' &&
+  /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname);
+
 interface ChatTurn {
   role: 'user' | 'agent';
   text: string;
@@ -58,6 +69,8 @@ export function CompareView({ sessionId, report }: Props) {
 
   const openLive = async () => {
     setMode('live');
+    // Over a tunnel/https this can never embed, so don't even boot throwaway servers.
+    if (!canEmbedLive) return;
     if (preview?.status === 'ready') return;
     setPreviewLoading(true);
     try {
@@ -178,7 +191,7 @@ export function CompareView({ sessionId, report }: Props) {
   );
 }
 
-/** Renders the two interactive iframes, or a non-crashing fallback. */
+/** Renders the two interactive iframes when possible, else an honest labelled dummy. */
 function LivePreview({
   loading,
   result,
@@ -196,32 +209,73 @@ function LivePreview({
     );
   }
 
-  if (!result || result.status === 'unavailable') {
+  // A real, viewable preview needs bootable servers AND a page that can embed them.
+  if (result && result.status === 'ready' && canEmbedLive) {
     return (
-      <div className="fallback">
-        <p>
-          Live preview unavailable. Showing source diff instead.
-          {result ? ` (${result.reason})` : ''}
-        </p>
-        {result && (
-          <button type="button" className="ghost sm" onClick={onFallback}>
-            Back to source diff
-          </button>
-        )}
+      <div className="preview-grid">
+        <div className="preview-col">
+          <div className="preview-label">Before</div>
+          <iframe className="preview-frame" title="Before" src={result.before} />
+        </div>
+        <div className="preview-col">
+          <div className="preview-label">After</div>
+          <iframe className="preview-frame" title="After" src={result.after} />
+        </div>
       </div>
     );
   }
 
+  // Otherwise: clearly-labelled illustrative placeholder — never a fake "real" screenshot.
+  let reason: string;
+  if (!canEmbedLive) {
+    reason =
+      'The running-app view boots the app on the server itself, which a secured or shared ' +
+      'connection (this tunnel/https page) cannot embed. It works when you run Decypher locally.';
+  } else if (!result) {
+    reason = 'Live preview is starting…';
+  } else {
+    reason = result.status === 'unavailable' ? result.reason : 'The preview servers could not be embedded here.';
+  }
+
   return (
-    <div className="preview-grid">
-      <div className="preview-col">
-        <div className="preview-label">Before</div>
-        <iframe className="preview-frame" title="Before" src={result.before} />
+    <div className="lp-fallback">
+      <div className="lp-fallback-head">
+        <span className="lp-badge">Illustrative preview · not live</span>
+        <button type="button" className="ghost sm" onClick={onFallback}>
+          Back to code comparison ↗
+        </button>
       </div>
-      <div className="preview-col">
-        <div className="preview-label">After</div>
-        <iframe className="preview-frame" title="After" src={result.after} />
+      <p className="lp-reason">{reason}</p>
+      <div className="lp-dummies">
+        <DummyFrame label="Before" />
+        <DummyFrame label="After" accent />
       </div>
+      <p className="lp-note">
+        The code diff is fully live — only the running-app preview is out of scope in this deployment.
+      </p>
+    </div>
+  );
+}
+
+/** A faux browser window used as a placeholder when the real preview can't run. */
+function DummyFrame({ label, accent = false }: { label: string; accent?: boolean }) {
+  return (
+    <div className="lp-dummy">
+      <div className="lp-dummy-bar">
+        <span className="lp-dot r" />
+        <span className="lp-dot y" />
+        <span className="lp-dot g" />
+        <span className="lp-dummy-url">app preview ({label.toLowerCase()})</span>
+      </div>
+      <div className="lp-dummy-body">
+        <div className="lp-wire lp-wire-title" />
+        <div className="lp-wire lp-wire-line" />
+        <div className="lp-wire lp-wire-item" />
+        <div className="lp-wire lp-wire-item" />
+        <div className="lp-wire lp-wire-item short" />
+        {accent && <div className="lp-wire lp-wire-added" />}
+      </div>
+      <div className="lp-dummy-tag">{label} · sample</div>
     </div>
   );
 }
