@@ -1,8 +1,12 @@
+// Load .env before reading any process.env values.
+import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import express from 'express';
 import cors from 'cors';
+import multer from 'multer';
 import { OrchestratorError, DecypherOrchestrator } from './server/orchestrator';
+import { RepoLoaderError, cloneRepo, extractZip, validateLocalPath } from './server/repoLoader';
 import type { AgentKind, ConflictResolution } from '@decypher/core';
 
 const projectDir = dirname(fileURLToPath(import.meta.url));
@@ -24,6 +28,9 @@ const app = express();
 app.use(cors({ origin: WEB_ORIGIN }));
 app.use(express.json({ limit: '2mb' }));
 
+/** multer instance — stores uploaded zips in memory (max 50 MB). */
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
 /** Wrap async handlers so rejected promises hit the error middleware. */
 const wrap =
   (fn: (req: express.Request, res: express.Response) => unknown) =>
@@ -40,6 +47,46 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, agent: AGENT, defaultRepo: DEFAULT_REPO, preview: PREVIEW_PORTS });
 });
 
+/**
+ * POST /api/repo/from-url   { source: string }
+ * Accepts a GitHub URL or an absolute local folder path.
+ * Returns { localPath } — the caller then opens a session with that path.
+ */
+app.post(
+  '/api/repo/from-url',
+  wrap(async (req, res) => {
+    const source = String(req.body?.source ?? '').trim();
+    if (!source) throw new OrchestratorError('A GitHub URL or local folder path is required.');
+
+    let localPath: string;
+    if (source.startsWith('git@') || source.startsWith('http://') || source.startsWith('https://')) {
+      localPath = await cloneRepo(source);
+    } else {
+      localPath = validateLocalPath(source);
+    }
+
+    res.json({ localPath });
+  }),
+);
+
+/**
+ * POST /api/repo/from-zip   multipart/form-data  file: <zip>
+ * Accepts a .zip archive of a project folder.
+ * Returns { localPath } — the caller then opens a session with that path.
+ */
+app.post(
+  '/api/repo/from-zip',
+  upload.single('file'),
+  wrap(async (req, res) => {
+    if (!req.file) throw new OrchestratorError('No file uploaded. Send a .zip archive.');
+    if (!req.file.originalname.endsWith('.zip')) {
+      throw new OrchestratorError('Only .zip archives are supported.');
+    }
+    const localPath = await extractZip(req.file.buffer, req.file.originalname);
+    res.json({ localPath });
+  }),
+);
+
 app.post(
   '/api/session',
   wrap((req, res) => {
@@ -54,6 +101,25 @@ app.post(
 app.get(
   '/api/session/:id',
   wrap((req, res) => res.json(orchestrator.get(req.params.id))),
+);
+
+app.post(
+  '/api/session/:id/chat',
+  wrap(async (req, res) => {
+    const message = String(req.body?.message ?? '').trim();
+    if (!message) throw new OrchestratorError('A message is required.');
+    res.json(await orchestrator.chat(req.params.id, message));
+  }),
+);
+
+app.post(
+  '/api/session/:id/compare-chat',
+  wrap(async (req, res) => {
+    const question = String(req.body?.question ?? '').trim();
+    if (!question) throw new OrchestratorError('A question is required.');
+    const path = typeof req.body?.path === 'string' && req.body.path.trim() ? req.body.path : undefined;
+    res.json(await orchestrator.compareChat(req.params.id, question, path));
+  }),
 );
 
 app.post(
@@ -131,9 +197,9 @@ app.get(
   }),
 );
 
-// Error handler: OrchestratorError -> 409, everything else -> 500.
+// Error handler: OrchestratorError / RepoLoaderError -> 409, everything else -> 500.
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  if (err instanceof OrchestratorError) {
+  if (err instanceof OrchestratorError || err instanceof RepoLoaderError) {
     res.status(409).json({ error: err.message });
     return;
   }

@@ -130,6 +130,40 @@ export type ConflictResolution = 'allow' | 'keep-and-replan' | 'cancel';
 /** Which stage the session is currently in. */
 export type SessionStage = 'idle' | 'planned' | 'blocked' | 'ready' | 'applied';
 
+/**
+ * The kind of AI-generated message in the chat thread.
+ * - plan-narrative: plain-English explanation of what the plan will do and why.
+ * - diff-narrative: plain-English explanation of what actually changed after apply.
+ * - assistant: free-form AI answer to a user question (not tied to any plan stage).
+ * - plan-card: structured card listing planned files + action buttons.
+ * - diff-card: structured card listing changed files after apply + action buttons.
+ */
+export type ChatMessageKind = 'plan-narrative' | 'diff-narrative' | 'assistant' | 'plan-card' | 'diff-card';
+
+/** Minimal file entry embedded in a plan-card or diff-card chat message. */
+export interface ChatFileEntry {
+  path: string;
+  action: FileAction;
+  /** For plan-card: why this file is involved. For diff-card: +added / -removed counts. */
+  purpose: string;
+  added?: number;
+  removed?: number;
+}
+
+/** A single AI-generated message shown in the chat thread. */
+export interface ChatMessage {
+  kind: ChatMessageKind;
+  text: string;
+  timestamp: number;
+  /** Present on plan-card and diff-card messages. */
+  files?: ChatFileEntry[];
+  /**
+   * Which engine produced an assistant reply. When the live agent (Bob) is configured
+   * but a call fails, the mock answers and this is 'mock' — so the UI can label it.
+   */
+  source?: 'bob' | 'mock';
+}
+
 /** A single session object that drives the whole workflow on the frontend. */
 export interface DecypherSession {
   id: string;
@@ -143,4 +177,6 @@ export interface DecypherSession {
   snapshotId?: string;
   diff?: DiffReport;
   stage: SessionStage;
+  /** Ordered AI-generated narrative messages for this session. */
+  chatHistory: ChatMessage[];
 }

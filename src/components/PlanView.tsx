@@ -15,7 +15,7 @@ export function PlanView({ plan, isProtected, onToggleLock }: Props) {
       {plan.files.map((file) => {
         const locked = isProtected(file.path);
         return (
-          <div className="file-item" key={file.path}>
+          <div className={`file-item flagged`} key={file.path}>
             <span className={`badge ${file.action}`}>{file.action}</span>
             <div className="meta">
               <div className="path">{file.path}</div>

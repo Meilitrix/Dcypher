@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DiffReport } from '@decypher/core';
 import { api, type PreviewResult } from '../api';
 import { DiffBlock } from './DiffBlock';
@@ -10,12 +10,19 @@ interface Props {
 
 type Mode = 'source' | 'live';
 
-/** Stage 3: what changed and why, plus an interactive before/after source view. */
+interface ChatTurn {
+  role: 'user' | 'agent';
+  text: string;
+  source?: 'bob' | 'mock';
+}
+
+/** Stage 3: change control — a left rail of view controls, the code/diff, and a right-side chat. */
 export function CompareView({ sessionId, report }: Props) {
   const [mode, setMode] = useState<Mode>('source');
   const [selected, setSelected] = useState(report.changedFiles[0]?.path ?? '');
   const [before, setBefore] = useState('');
   const [after, setAfter] = useState('');
+  const [railOpen, setRailOpen] = useState(true);
 
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -63,76 +70,110 @@ export function CompareView({ sessionId, report }: Props) {
   };
 
   return (
-    <div>
-      <div className="toggle" role="tablist">
+    <div className="cc-wrap">
+      {/* ── Left rail: hamburger controls (view modes, summary, file list) ── */}
+      <aside className={`cc-rail${railOpen ? '' : ' collapsed'}`}>
         <button
           type="button"
-          className={`toggle-btn${mode === 'source' ? ' active' : ''}`}
-          onClick={() => setMode('source')}
+          className="cc-rail-toggle"
+          onClick={() => setRailOpen((o) => !o)}
+          title={railOpen ? 'Collapse panel' : 'Expand panel'}
         >
-          Source diff
+          ☰
         </button>
-        <button
-          type="button"
-          className={`toggle-btn${mode === 'live' ? ' active' : ''}`}
-          onClick={openLive}
-        >
-          Live preview
-        </button>
-      </div>
 
-      <div className="summary">
-        {report.before.fileCount} files before → {report.after.fileCount} after ·{' '}
-        {report.changedFiles.length} file(s) changed. Both states are preserved.
-      </div>
+        <div className="cc-rail-inner">
+          <div className="cc-rail-label">View</div>
+          <button
+            type="button"
+            className={`cc-nav-btn${mode === 'source' ? ' active' : ''}`}
+            onClick={() => setMode('source')}
+            title="Code view"
+          >
+            {'</>'}
+            {railOpen && <span className="cc-nav-text">Code view</span>}
+          </button>
+          <button
+            type="button"
+            className={`cc-nav-btn${mode === 'live' ? ' active' : ''}`}
+            onClick={openLive}
+            title="See the live running app, before vs after"
+          >
+            ▶
+            {railOpen && <span className="cc-nav-text">See live app view</span>}
+          </button>
 
-      {mode === 'live' && (
-        <LivePreview loading={previewLoading} result={preview} onFallback={() => setMode('source')} />
-      )}
-
-      {mode === 'source' && (
-        <>
-          <div className="row" style={{ marginBottom: 16 }}>
-            {report.changedFiles.map((f) => (
-              <button
-                key={f.path}
-                type="button"
-                className={`chip${f.path === selected ? ' active' : ''}`}
-                style={
-                  f.path === selected
-                    ? { color: 'var(--text)', borderStyle: 'solid', borderColor: 'var(--accent)' }
-                    : undefined
-                }
-                onClick={() => setSelected(f.path)}
-              >
-                {f.path}
-              </button>
-            ))}
-          </div>
-
-          {selectedFile && (
+          {railOpen && (
             <>
-              <DiffBlock file={selectedFile} />
-              <div className="compare">
-                <div className="pane original">
-                  <header>
-                    <span>Original</span>
-                    <span>{selected}</span>
-                  </header>
-                  <pre>{before}</pre>
-                </div>
-                <div className="pane modified">
-                  <header>
-                    <span>Modified</span>
-                    <span>{selected}</span>
-                  </header>
-                  <pre>{after}</pre>
-                </div>
+              <div className="cc-rail-label">Summary</div>
+              <div className="cc-summary">
+                {report.before.fileCount} files before → {report.after.fileCount} after ·{' '}
+                {report.changedFiles.length} file(s) changed. Both states are preserved.
+              </div>
+
+              <div className="cc-rail-label">Changed files</div>
+              <div className="cc-filelist">
+                {report.changedFiles.map((f) => (
+                  <button
+                    key={f.path}
+                    type="button"
+                    className={`cc-file${f.path === selected ? ' active' : ''}`}
+                    onClick={() => {
+                      setSelected(f.path);
+                      setMode('source');
+                    }}
+                    title={f.path}
+                  >
+                    <span className={`badge ${f.action}`}>{f.action}</span>
+                    <span className="cc-file-path">{f.path}</span>
+                    <span className="cc-file-counts">
+                      <span className="add">+{f.added}</span>
+                      <span className="rem">−{f.removed}</span>
+                    </span>
+                  </button>
+                ))}
               </div>
             </>
           )}
-        </>
-      )}
+        </div>
+      </aside>
+
+      {/* ── Main: the code / diff (kept as-is) or the live preview ── */}
+      <main className="cc-main">
+        {mode === 'live' && (
+          <LivePreview loading={previewLoading} result={preview} onFallback={() => setMode('source')} />
+        )}
+
+        {mode === 'source' && (
+          <>
+            <div className="cc-selected-path">{selected}</div>
+            {selectedFile && (
+              <>
+                <DiffBlock file={selectedFile} />
+                <div className="compare">
+                  <div className="pane original">
+                    <header>
+                      <span>Original</span>
+                      <span>{selected}</span>
+                    </header>
+                    <pre>{before}</pre>
+                  </div>
+                  <div className="pane modified">
+                    <header>
+                      <span>Modified</span>
+                      <span>{selected}</span>
+                    </header>
+                    <pre>{after}</pre>
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </main>
+
+      {/* ── Right: an IDE-style chat about this comparison ── */}
+      <CompareChat sessionId={sessionId} selected={mode === 'source' ? selected : undefined} />
     </div>
   );
 }
@@ -182,5 +223,89 @@ function LivePreview({
         <iframe className="preview-frame" title="After" src={result.after} />
       </div>
     </div>
+  );
+}
+
+/**
+ * A chat scoped to the change-control window. The agent has the applied diff with line
+ * numbers, so it can tell the user exactly which line to look at and what changed.
+ */
+function CompareChat({ sessionId, selected }: { sessionId: string; selected?: string }) {
+  const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [turns.length, busy]);
+
+  const send = () => {
+    const question = input.trim();
+    if (!question || busy) return;
+    setTurns((prev) => [...prev, { role: 'user', text: question }]);
+    setInput('');
+    setBusy(true);
+    api
+      .compareChat(sessionId, question, selected)
+      .then(({ reply, source }) => setTurns((prev) => [...prev, { role: 'agent', text: reply, source }]))
+      .catch((err: Error) => setTurns((prev) => [...prev, { role: 'agent', text: err.message }]))
+      .finally(() => setBusy(false));
+  };
+
+  return (
+    <aside className="cc-chat">
+      <div className="cc-chat-header">Ask about this change</div>
+      <div className="cc-chat-msgs">
+        {turns.length === 0 && (
+          <div className="cc-chat-empty">
+            Ask which lines changed, why, what the new behaviour is, or what fell back —
+            the answers point to exact line numbers in the diff.
+          </div>
+        )}
+        {turns.map((t, i) => (
+          <div key={i} className={`cc-chat-row ${t.role}`}>
+            <div className={`cc-chat-bubble ${t.role}`}>
+              {t.role === 'agent' && t.source === 'mock' && (
+                <div className="cc-chat-src mock" title="Live IBM Bob is unreachable — this came from the offline fallback.">
+                  ⚠ offline mock
+                </div>
+              )}
+              {t.role === 'agent' && t.source === 'bob' && (
+                <div className="cc-chat-src live" title="Answered live by IBM Bob 2.0.">● IBM Bob</div>
+              )}
+              {t.text}
+            </div>
+          </div>
+        ))}
+        {busy && (
+          <div className="cc-chat-row agent">
+            <div className="cc-chat-bubble agent thinking">
+              <span className="spinner" /> Thinking…
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+      <div className="cc-chat-input-row">
+        <textarea
+          className="cc-chat-input"
+          rows={2}
+          placeholder="e.g. What changed on which lines?"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              send();
+            }
+          }}
+          disabled={busy}
+        />
+        <button type="button" className="chat-send" onClick={send} disabled={busy || !input.trim()} title="Send">
+          {busy ? <span className="spinner" /> : '↑'}
+        </button>
+      </div>
+    </aside>
   );
 }

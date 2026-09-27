@@ -27,6 +27,10 @@ async function main(): Promise<void> {
   s = await orch.plan(s.id, 'Add due dates to tasks');
   assert(s.plan && s.plan.files.length >= 2, 'plan produced multiple files');
   assert(s.stage === 'planned', 'no conflicts before protecting');
+  assert(s.chatHistory.length === 2, 'plan pushes narrative + card');
+  assert(s.chatHistory[0].kind === 'plan-narrative', 'first message is plan-narrative');
+  assert(s.chatHistory[0].text.length > 10, 'plan narrative is non-empty');
+  assert(s.chatHistory[1].kind === 'plan-card', 'second message is plan-card');
 
   s = orch.addProtection(s.id, 'web/app.js', 'render layer');
   assert(s.stage === 'blocked', 'locking web/app.js blocks the plan');
@@ -42,6 +46,10 @@ async function main(): Promise<void> {
   assert(changed.includes('src/store.js'), 'store.js changed');
   assert(!changed.includes('web/app.js'), 'protected web/app.js was NOT changed');
   assert(changed.includes('src/util/dates.js'), 'new file src/util/dates.js created');
+  assert(s.chatHistory.length === 4, 'apply pushes narrative + card');
+  assert(s.chatHistory[2].kind === 'diff-narrative', 'diff narrative message present');
+  assert(s.chatHistory[2].text.length > 10, 'diff narrative is non-empty');
+  assert(s.chatHistory[3].kind === 'diff-card', 'diff card message present');
 
   const before = orch.fileContent(s.id, 'before', 'src/store.js');
   const after = orch.fileContent(s.id, 'after', 'src/store.js');

@@ -4,7 +4,16 @@ dist/
 .decypher-smoke/
 .decypher-smoke-preview/
 .decypher-preview/
-*.log
-.DS_Store
+
+# Local secrets — never commit the real .env. Keep .env.example (placeholders only).
 .env
 .env.local
+.env.*.local
+
+# Debug / runtime artifacts
+*.log
+*.err
+.ports.txt
+.path.txt
+.probe.txt
+.DS_Store

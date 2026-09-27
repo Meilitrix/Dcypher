@@ -8,7 +8,7 @@ import { BobAdapter, readBobConfig } from './bob';
  * If "bob" is requested but not configured, it still returns a BobAdapter which
  * internally falls back to the mock, so callers get a working plan either way.
  */
-export type { AgentAdapter, PlannedWrites } from './adapter';
+export type { AgentAdapter, ConversationTurn, PlannedWrites } from './adapter';
 export { MockAdapter } from './mock';
 export { BobAdapter, readBobConfig } from './bob';
 

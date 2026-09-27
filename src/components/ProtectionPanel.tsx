@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import type { ProtectedRule, RepoIndex } from '@decypher/core';
-import { matchGlob } from '@decypher/protect';
 
 interface Props {
   index: RepoIndex;
   rules: ProtectedRule[];
+  /** Paths the current plan intends to change — passed through for ContextPanel compatibility. */
+  plannedPaths: string[];
   onTogglePath: (path: string) => void;
   onAddGlob: (glob: string) => void;
   onRemove: (ruleId: string) => void;
 }
 
-/** Stage 2 controls: browse the repo tree, lock paths, and manage glob rules. */
-export function ProtectionPanel({ index, rules, onTogglePath, onAddGlob, onRemove }: Props) {
+/**
+ * Glob-rule manager. The file tree has moved to FileTree (left sidebar).
+ * This component handles: add a glob pattern + display the active rule list.
+ */
+export function ProtectionPanel({ rules, onAddGlob, onRemove }: Props) {
   const [glob, setGlob] = useState('');
-  const files = index.files.filter((f) => f.type === 'file');
-
-  const isLocked = (path: string) => rules.some((r) => r.locked && matchGlob(r.glob, path));
 
   const submitGlob = () => {
     const value = glob.trim();
@@ -25,58 +26,42 @@ export function ProtectionPanel({ index, rules, onTogglePath, onAddGlob, onRemov
   };
 
   return (
-    <div>
-      <div className="row" style={{ marginBottom: 12 }}>
+    <div className="protection-panel">
+      <div className="row" style={{ marginBottom: 10 }}>
         <input
           type="text"
-          placeholder="add a glob, e.g. web/** or src/store.js"
+          placeholder="glob, e.g. web/** or src/store.js"
           value={glob}
           onChange={(e) => setGlob(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submitGlob()}
         />
-        <button type="button" className="primary" onClick={submitGlob}>
+        <button type="button" className="primary sm" onClick={submitGlob}>
           Lock
         </button>
       </div>
 
       {rules.length > 0 && (
-        <div style={{ marginBottom: 14 }}>
+        <div className="rule-list">
           {rules.map((rule) => (
             <div className="rule" key={rule.id}>
               <span className={`state ${rule.locked ? 'on' : 'off'}`}>
-                {rule.locked ? '🔒 locked' : '🔓 off'}
+                {rule.locked ? '🔒' : '🔓'}
               </span>
               <span className="g">{rule.glob}</span>
-              <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--muted)' }}>
-                {rule.label}
-              </span>
+              <span className="rule-label">{rule.label}</span>
               <button type="button" className="sm ghost" onClick={() => onRemove(rule.id)}>
-                remove
+                ✕
               </button>
             </div>
           ))}
         </div>
       )}
 
-      <div className="section-title">Repository files</div>
-      <div className="tree">
-        {files.map((file) => {
-          const locked = isLocked(file.path);
-          return (
-            <div className="node" key={file.path}>
-              <button
-                type="button"
-                className={`lock-btn sm${locked ? ' locked' : ''}`}
-                onClick={() => onTogglePath(file.path)}
-                title={locked ? 'Unlock' : 'Lock this file'}
-              >
-                {locked ? '🔒' : '🔓'}
-              </button>
-              <span className={locked ? 'active' : ''}>{file.path}</span>
-            </div>
-          );
-        })}
-      </div>
+      {rules.length === 0 && (
+        <p className="ctx-hint" style={{ marginTop: 6 }}>
+          No active glob rules. Lock individual files via the sidebar, or add a glob above.
+        </p>
+      )}
     </div>
   );
 }

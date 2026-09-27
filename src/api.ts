@@ -17,10 +17,39 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 /** Thin typed client over the Decypher orchestrator API. */
 export const api = {
   health: () => request<{ ok: boolean; agent: AgentKind; defaultRepo: string }>('/api/health'),
+
+  /** Resolve a GitHub URL or local folder path → { localPath }. */
+  repoFromUrl: (source: string) =>
+    request<{ localPath: string }>('/api/repo/from-url', {
+      method: 'POST',
+      body: JSON.stringify({ source }),
+    }),
+
+  /** Upload a .zip file and extract it → { localPath }. */
+  repoFromZip: async (file: File): Promise<{ localPath: string }> => {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch(`${API_BASE}/api/repo/from-zip`, { method: 'POST', body: form });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data as { error?: string }).error ?? `Upload failed (${res.status})`);
+    return data as { localPath: string };
+  },
+
   createSession: (repoRoot?: string, agent?: AgentKind) =>
     request<DecypherSession>('/api/session', {
       method: 'POST',
       body: JSON.stringify({ repoRoot, agent }),
+    }),
+  chat: (id: string, message: string) =>
+    request<{ reply: string; source: 'bob' | 'mock' }>(`/api/session/${id}/chat`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
+  /** Chat scoped to the change-control window; answers cite diff line numbers. */
+  compareChat: (id: string, question: string, path?: string) =>
+    request<{ reply: string; source: 'bob' | 'mock' }>(`/api/session/${id}/compare-chat`, {
+      method: 'POST',
+      body: JSON.stringify({ question, path }),
     }),
   plan: (id: string, text: string) =>
     request<DecypherSession>(`/api/session/${id}/plan`, {
